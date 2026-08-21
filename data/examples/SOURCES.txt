@@ -1,0 +1,58 @@
+Real microscope frames (Wikimedia Commons).
+Resized for the UI. Original licenses unchanged.
+
+01-fluorescence.jpg
+  modality: fluorescence (Fluorescence)
+  commons: File:DAPIMitoTrackerRedAlexaFluor488BPAE.jpg
+  license: CC BY-SA 3.0
+  author: IP69.226.103.13
+  page: https://commons.wikimedia.org/wiki/File:DAPIMitoTrackerRedAlexaFluor488BPAE.jpg
+
+02-brightfield.jpg
+  modality: brightfield (Fond clair)
+  commons: File:Histology_of_normal_prostate.jpg
+  license: CC0
+  author: Mikael Häggström , M.D. Author info - Reusing images - Conflicts of interest: None Mikael Häggström , M.D. Consent note : Consent from the patient or patient's relatives is regarded as redundant, because of absence of identifiable features ( List of HIPAA identifiers ) in the media and case information ( See also HIPAA case reports guidance ).
+  page: https://commons.wikimedia.org/wiki/File:Histology_of_normal_prostate.jpg
+
+03-phase-contrast.jpg
+  modality: phase_contrast (Phase)
+  commons: File:Cho_cells_adherend1.jpg
+  license: Public domain
+  author: User:Alcibiades
+  page: https://commons.wikimedia.org/wiki/File:Cho_cells_adherend1.jpg
+
+04-sem.jpg
+  modality: sem (MEB)
+  commons: File:Blood_clot_in_scanning_electron_microscopy.jpg
+  license: Public domain
+  author: Janice Carr
+  page: https://commons.wikimedia.org/wiki/File:Blood_clot_in_scanning_electron_microscopy.jpg
+
+05-darkfield.jpg
+  modality: darkfield (Fond noir)
+  commons: File:Red_blood_cells_by_darkfield_microscopy.jpg
+  license: CC BY-SA 4.0
+  author: Dr Graham Beards
+  page: https://commons.wikimedia.org/wiki/File:Red_blood_cells_by_darkfield_microscopy.jpg
+
+06-confocal.jpg
+  modality: confocal (Confocal)
+  commons: File:Multicolor_fluorescence_image_of_a_living_HeLa_cell.jpg
+  license: CC BY-SA 4.0
+  author: 8x57is
+  page: https://commons.wikimedia.org/wiki/File:Multicolor_fluorescence_image_of_a_living_HeLa_cell.jpg
+
+07-fluorescence-2.jpg
+  modality: fluorescence (Fluo fibroblastes)
+  commons: File:Fluorescent_image_fibroblast.jpg
+  license: Public domain
+  author: James J. Faust and David G. Capco
+  page: https://commons.wikimedia.org/wiki/File:Fluorescent_image_fibroblast.jpg
+
+08-brightfield-2.jpg
+  modality: brightfield (H&E dense)
+  commons: File:Adenocarcinoma_moderate_differentiated_(rectum)_H&E_magn_400x.jpg
+  license: Public domain
+  page: https://commons.wikimedia.org/wiki/File:Adenocarcinoma_moderate_differentiated_%28rectum%29_H%26E_magn_400x.jpg
+

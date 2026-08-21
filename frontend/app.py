@@ -12,10 +12,9 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.classes import BLURBS, CLASSES, LABELS_FR
+from src.classes import BLURBS, LABELS_FR
 from src.classifier import load_model, predict
 from src.features import FEATURE_NAMES, extract_features
-from src.synth import make_image
 
 st.set_page_config(
     page_title="Panopticon · NOW medical",
@@ -56,6 +55,7 @@ st.markdown(
       }
       .hint { color: #8c887c; font-size: 0.92rem; }
       div[data-testid="stMetricValue"] { font-family: 'IBM Plex Mono', monospace; }
+      .ex-help { color: #8c887c; font-size: 0.88rem; margin: 0 0 0.6rem; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -68,6 +68,19 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+EXAMPLES_DIR = ROOT / "data" / "examples"
+# Vraies frames (Wikimedia) — clic = saisie auto.
+EXAMPLES: list[tuple[str, str, str]] = [
+    ("01-fluorescence.jpg", "fluorescence", "Fluorescence"),
+    ("02-brightfield.jpg", "brightfield", "Fond clair"),
+    ("03-phase-contrast.jpg", "phase_contrast", "Phase"),
+    ("04-sem.jpg", "sem", "MEB"),
+    ("05-darkfield.jpg", "darkfield", "Fond noir"),
+    ("06-confocal.jpg", "confocal", "Confocal"),
+    ("07-fluorescence-2.jpg", "fluorescence", "Fluo fibroblastes"),
+    ("08-brightfield-2.jpg", "brightfield", "H&E dense"),
+]
+
 
 @st.cache_resource(show_spinner=False)
 def _model():
@@ -75,50 +88,90 @@ def _model():
 
 
 @st.cache_data(show_spinner=False)
-def _demo(label: str, seed: int) -> np.ndarray:
-    return make_image(label, seed=seed)
+def _example_rgb(filename: str) -> np.ndarray:
+    return np.array(Image.open(EXAMPLES_DIR / filename).convert("RGB"))
 
 
-model = _model()
+def _pick_example(i: int) -> None:
+    st.session_state.example_i = i
+    st.session_state.use_upload = False
 
-with st.sidebar:
-    st.header("Source")
-    mode = st.radio("Image", ["Galerie synthétique", "Upload"], index=0)
-    label = st.selectbox(
-        "Modalité (démo)",
-        list(CLASSES),
-        format_func=lambda k: LABELS_FR[k],
-        index=0,
-    )
-    seed = st.slider("Seed", 0, 99, 3)
-    uploaded = None
-    if mode == "Upload":
-        uploaded = st.file_uploader("JPG / PNG microscope", type=["jpg", "jpeg", "png"])
-        st.caption("Le modèle a été entraîné sur des frames synthétiques. Une vraie photo peut être incertaine — c’est le point du PoC.")
+
+def _on_upload() -> None:
+    if st.session_state.get("uploader") is not None:
+        st.session_state.use_upload = True
 
 
 def _load_upload(file) -> np.ndarray:
     return np.array(Image.open(file).convert("RGB"))
 
 
-rgb: np.ndarray | None = None
-gt: str | None = None
-if mode == "Galerie synthétique":
-    rgb = _demo(label, seed)
-    gt = label
-elif uploaded is not None:
-    rgb = _load_upload(uploaded)
+if "example_i" not in st.session_state:
+    st.session_state.example_i = 0
+if "use_upload" not in st.session_state:
+    st.session_state.use_upload = False
 
-if rgb is None:
-    st.info("Choisis une vue synthétique ou charge une image.")
-    st.stop()
+model = _model()
+
+with st.sidebar:
+    st.header("Upload")
+    uploaded = st.file_uploader(
+        "JPG / PNG microscope",
+        type=["jpg", "jpeg", "png"],
+        key="uploader",
+        on_change=_on_upload,
+    )
+    st.caption(
+        "Ou clique un exemple à droite. Le modèle est entraîné sur du synthétique "
+        "— une vraie photo peut être incertaine."
+    )
+
+st.markdown('<div class="eyebrow">Exemples</div>', unsafe_allow_html=True)
+st.markdown(
+    '<p class="ex-help">Photos réelles. Clique un exemple pour le saisir automatiquement.</p>',
+    unsafe_allow_html=True,
+)
+
+picked = int(st.session_state.example_i)
+using_upload = bool(st.session_state.use_upload and uploaded is not None)
+
+for row_start in (0, 4):
+    cols = st.columns(4, gap="small")
+    for j, col in enumerate(cols):
+        i = row_start + j
+        filename, _label, caption = EXAMPLES[i]
+        selected = (not using_upload) and picked == i
+        with col:
+            with st.container(border=True):
+                st.image(_example_rgb(filename), use_container_width=True)
+                st.button(
+                    caption,
+                    key=f"ex-{i}",
+                    use_container_width=True,
+                    type="primary" if selected else "secondary",
+                    on_click=_pick_example,
+                    args=(i,),
+                    help="Saisir cette frame et lancer l’analyse",
+                )
+
+if using_upload:
+    rgb = _load_upload(uploaded)
+    gt = None
+    source_caption = "Upload"
+else:
+    filename, label, caption = EXAMPLES[picked]
+    rgb = _example_rgb(filename)
+    gt = label
+    source_caption = f"Exemple · {caption}"
+
+st.divider()
 
 result = predict(rgb, model=model)
 feats = extract_features(rgb)
 
 left, right = st.columns((1.15, 1), gap="large")
 with left:
-    st.image(rgb, caption="Frame brute", use_container_width=True)
+    st.image(rgb, caption=f"Frame brute · {source_caption}", use_container_width=True)
 with right:
     st.markdown('<div class="eyebrow">Verdict</div>', unsafe_allow_html=True)
     st.markdown(
@@ -151,3 +204,19 @@ with st.expander("Preuves — signatures visuelles"):
     for i, (name, val) in enumerate(show.items()):
         cols[i % 4].metric(name, f"{val:.2f}")
     st.caption("Features: " + ", ".join(FEATURE_NAMES))
+
+with st.expander("Sources des exemples"):
+    st.caption(
+        "Photos réelles, Wikimedia Commons (redimensionnées). "
+        "Licences : domaine public / CC0 / CC BY-SA. Détail : data/examples/SOURCES.txt"
+    )
+    st.markdown(
+        "- Fluorescence — BPAE, CC BY-SA 3.0\n"
+        "- Fond clair — prostate H&E, Mikael Häggström, CC0\n"
+        "- Phase — cellules CHO, domaine public\n"
+        "- MEB — caillot, Janice Carr / CDC, domaine public\n"
+        "- Fond noir — GR, Dr Graham Beards, CC BY-SA 4.0\n"
+        "- Confocal — HeLa, CC BY-SA 4.0\n"
+        "- Fluo fibroblastes — Faust & Capco / NIH, domaine public\n"
+        "- H&E dense — adénocarcinome, domaine public"
+    )
