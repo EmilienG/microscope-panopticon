@@ -1,6 +1,6 @@
 {
   "accuracy": 1.0,
-  "n_train": 216,
+  "n_train": 280,
   "n_test": 72,
   "per_class_f1": {
     "fluorescence": 1.0,
@@ -10,7 +10,15 @@
     "darkfield": 1.0,
     "confocal": 1.0
   },
-  "model": "/home/emi/code/EmilienG/lewagon-final-wow-lab/08-microscope-panopticon/models/modality_clf.joblib",
+  "model": "/home/emi/code/EmilienG/lewagon-final-wow-lab/08-microscope-panopticon/models/modality_mobilenet.onnx",
+  "backbone": "mobilenet_v2_imagenet",
+  "dataset": {
+    "cytopacq": 56,
+    "synth_fill": 232,
+    "real_aug": 64,
+    "per_class": 48,
+    "simulator": "https://cbia.fi.muni.cz/simulator/index.php"
+  },
   "classes": [
     "fluorescence",
     "brightfield",
@@ -18,5 +26,15 @@
     "sem",
     "darkfield",
     "confocal"
-  ]
+  ],
+  "real_examples": {
+    "Fluorescence": "ok fluorescence 1.00",
+    "Fond clair": "ok brightfield 1.00",
+    "Phase": "ok phase_contrast 1.00",
+    "MEB": "ok sem 1.00",
+    "Fond noir": "ok darkfield 1.00",
+    "Confocal": "ok confocal 1.00",
+    "Fluo fibroblastes": "ok fluorescence 1.00",
+    "H&E dense": "ok brightfield 1.00"
+  }
 }

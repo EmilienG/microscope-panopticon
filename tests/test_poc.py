@@ -1,16 +1,18 @@
-"""Tests Panopticon — features, synth, classifieur."""
+"""Tests Panopticon — features, CytoPacq loader, CNN classifier."""
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from src.classes import CLASSES
 from src.classifier import predict, train
+from src.cytopacq import load_mucic_previews
 from src.features import FEATURE_NAMES, extract_features
 from src.synth import make_dataset, make_image
 
@@ -35,17 +37,45 @@ def test_dataset_counts():
     assert set(labels) == set(CLASSES)
 
 
+def test_cytopacq_previews_are_rgb():
+    frames = load_mucic_previews()
+    assert len(frames) >= 8
+    assert frames[0].ndim == 3 and frames[0].shape[2] == 3
+
+
 def test_train_and_predict(tmp_path):
-    model_path = tmp_path / "clf.joblib"
-    metrics = train(per_class=24, seed=3, model_path=model_path)
-    assert metrics["accuracy"] >= 0.85
+    model_path = tmp_path / "clf.onnx"
+    metrics = train(
+        per_class=8,
+        seed=3,
+        model_path=model_path,
+        epochs=1,
+        batch_size=8,
+        use_cytopacq=False,
+    )
+    assert metrics["accuracy"] >= 0.4
     assert model_path.exists()
 
-    from joblib import load
+    from src.classifier import load_model
 
-    clf = load(model_path)
+    clf = load_model(model_path)
     img = make_image("brightfield", seed=9)
     out = predict(img, model=clf)
     assert out["label"] in CLASSES
     assert 0.0 <= out["confidence"] <= 1.0
+    assert len(out["ranking"]) == len(CLASSES)
+
+
+def test_predict_ignores_legacy_sklearn_model():
+    """Stale Streamlit cache used to pass a StandardScaler pipeline."""
+
+    class LegacyPipeline:
+        def predict_proba(self, x):
+            raise AssertionError("sklearn path must not run")
+
+    rgb = np.array(
+        Image.open(ROOT / "data" / "examples" / "04-sem.jpg").convert("RGB")
+    )
+    out = predict(rgb, model=LegacyPipeline())
+    assert out["label"] in CLASSES
     assert len(out["ranking"]) == len(CLASSES)

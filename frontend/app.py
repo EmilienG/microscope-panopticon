@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from src.classes import BLURBS, LABELS_FR
-from src.classifier import load_model, predict
+from src.classifier import MODEL_PATH, load_model, predict
 from src.features import FEATURE_NAMES, extract_features
 
 st.set_page_config(
@@ -83,8 +83,10 @@ EXAMPLES: list[tuple[str, str, str]] = [
 
 
 @st.cache_resource(show_spinner=False)
-def _model():
-    return load_model()
+def _model(path: str, mtime: float):
+    """Cache key includes the ONNX file so an old sklearn Pipeline cannot stick."""
+    del mtime
+    return load_model(path)
 
 
 @st.cache_data(show_spinner=False)
@@ -111,7 +113,11 @@ if "example_i" not in st.session_state:
 if "use_upload" not in st.session_state:
     st.session_state.use_upload = False
 
-model = _model()
+onnx_path = Path(MODEL_PATH)
+if not onnx_path.exists():
+    st.error("Modèle ONNX manquant — lance `python run_poc.py`.")
+    st.stop()
+model = _model(str(onnx_path), onnx_path.stat().st_mtime)
 
 with st.sidebar:
     st.header("Upload")
@@ -122,8 +128,8 @@ with st.sidebar:
         on_change=_on_upload,
     )
     st.caption(
-        "Ou clique un exemple à droite. Le modèle est entraîné sur du synthétique "
-        "— une vraie photo peut être incertaine."
+        "Ou clique un exemple. Modèle : MobileNetV2 (ImageNet) affiné sur "
+        "CytoPacq (PSF expérimentales Zeiss / Atto CARV) + frames complémentaires."
     )
 
 st.markdown('<div class="eyebrow">Exemples</div>', unsafe_allow_html=True)
@@ -219,4 +225,15 @@ with st.expander("Sources des exemples"):
         "- Confocal — HeLa, CC BY-SA 4.0\n"
         "- Fluo fibroblastes — Faust & Capco / NIH, domaine public\n"
         "- H&E dense — adénocarcinome, domaine public"
+    )
+
+with st.expander("Modèle et dataset"):
+    st.markdown(
+        "- **Backbone :** MobileNetV2 préentraîné ImageNet, tête 6 classes\n"
+        "- **CytoPacq :** [simulateur CBIA](https://cbia.fi.muni.cz/simulator/index.php) "
+        "(PSF expérimentales). Previews MUCIC HL60 (Zeiss S100 + Atto CARV, confocal) "
+        "et [Fluo-C3DH-A549-SIM](https://celltrackingchallenge.net/3d-datasets/) "
+        "(FiloGen / CytoPacq, GFP)\n"
+        "- **Complément :** générateur local pour les modalités absentes de CytoPacq "
+        "(fond clair, phase, MEB, fond noir)"
     )

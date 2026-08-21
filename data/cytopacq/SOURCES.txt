@@ -1,0 +1,8 @@
+"""CytoPacq / MUCIC preview stills used for confocal training.
+
+Simulator: https://cbia.fi.muni.cz/simulator/index.php
+Collection: https://cbia.fi.muni.cz/datasets/
+
+HL60 nuclei, Zeiss S100 + Atto CARV confocal, Micromax 1300-YHS.
+Official orthogonal-viewer previews; XY pane is cropped at train time.
+"""
