@@ -1,0 +1,22 @@
+{
+  "accuracy": 1.0,
+  "n_train": 216,
+  "n_test": 72,
+  "per_class_f1": {
+    "fluorescence": 1.0,
+    "brightfield": 1.0,
+    "phase_contrast": 1.0,
+    "sem": 1.0,
+    "darkfield": 1.0,
+    "confocal": 1.0
+  },
+  "model": "/home/emi/code/EmilienG/lewagon-final-wow-lab/08-microscope-panopticon/models/modality_clf.joblib",
+  "classes": [
+    "fluorescence",
+    "brightfield",
+    "phase_contrast",
+    "sem",
+    "darkfield",
+    "confocal"
+  ]
+}

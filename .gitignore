@@ -1,0 +1,10 @@
+models/*.joblib
+!models/modality_clf.joblib
+data/processed/*
+!data/processed/.gitkeep
+!data/processed/metrics.json
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.streamlit/secrets.toml
